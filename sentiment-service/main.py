@@ -13,7 +13,7 @@ sentiment_pipeline = None
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global sentiment_pipeline
-    print(f"⏳ Loading sentiment model from Hub: {MODEL_NAME}...")
+    print(f"Loading sentiment model from Hub: {MODEL_NAME}...")
     try:
         
         with torch.no_grad():
@@ -23,7 +23,7 @@ async def lifespan(app: FastAPI):
                 tokenizer=MODEL_NAME,
                 device=-1 
             )
-        print("✅ Sentiment model loaded successfully and ready!")
+        print("Sentiment model loaded successfully and ready!")
     except Exception as e:
         print("--- CRITICAL ERROR DURING MODEL LOADING ---")
         print(traceback.format_exc())
