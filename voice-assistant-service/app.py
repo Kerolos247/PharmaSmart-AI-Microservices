@@ -1,35 +1,30 @@
-import asyncio
 import os
+import io
+import asyncio
 from itertools import cycle
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, UploadFile, File, Form
 from pydantic import BaseModel
 from groq import Groq
 import uvicorn
 
-app = FastAPI(
-    title="Pharmasmart Voice & Text AI API",
-    description="Backend API powered by Llama 3.3 and Whisper via Groq - Egyptian Dialect"
-)
 
-# 1. قائمة مفاتيح Groq الخاصة بك للـ Round Robin
-GROQ_API_KEYS = [
-    "key1"
-]
+GROQ_KEYS_RAW = os.getenv("GROQ_API_KEYS", "")
 
-# عمل Loop لانهائي على المفاتيح بالترتيب
-keys_cycle = cycle(GROQ_API_KEYS)
-# قفل لضمان الأمان أثناء التبديل بين المفاتيح في الـ Async Requests
+GROQ_API_KEYS = [k.strip() for k in GROQ_KEYS_RAW.split(",") if k.strip()] if GROQ_KEYS_RAW else ["YOUR_LOCAL_GROQ_API_KEY"]
+
+
+groq_clients = [Groq(api_key=key) for key in GROQ_API_KEYS]
+clients_cycle = cycle(groq_clients)
 key_lock = asyncio.Lock()
 
 async def get_groq_client():
-    """دالة لجلب العميل القادم بناءً على نظام Round Robin"""
+    
     async with key_lock:
-        current_key = next(keys_cycle)
-        # طباعة بسيطة في الكونسول لمتابعة التبديل (تقدر تشيلها بعدين)
-        print(f"🔄 Using Groq Key: ...{current_key[-8:]}")
-        return Groq(api_key=current_key)
+        client = next(clients_cycle)
+        return client
 
-# 2. الـ System Prompt الصارم بالأمثلة لـ فارما سمارت
+
 SYSTEM_PROMPT = """
 أنت المساعد الذكي النصي الرسمي لـ "صيدلية فارما سمارت الذكية" (Pharmasmart Pharmacy). وظيفتك هي مساعدة المرضى والعملاء والرد على استفساراتهم بذكاء وبسرعة على الشاشة.
 
@@ -52,7 +47,7 @@ SYSTEM_PROMPT = """
    - 201028260783+
 4. مدير الصيدلية المسؤول: الدكتور مجدي يعقوب.
 
-💻 دليل استخدام الموقع الإلكتروني والخدمات (اشرحها للمريض لو سألك إزاي يستخدم الموقع أو يقدم طلب):
+💻 دليل استخدام الموقع الإلكتروني والخدمات:
 - رفع الروشتة (قاعدة صارمة جداً): المريض يقدر يدخل هنا على موقعنا ويرفع صورة الروشتة الرسمية بتاعته فوراً في المكان المخصص، وبيسيب معاها عنوانه ورقم تليفونه. 
   ⚠️ تنبيه حرج جداً للمريض: ممنوع تماماً المريض يكتب أسماء الأدوية نصياً أو يطلبها بكتابة اسمها على الموقع؛ الخدمة هنا مخصصة لرفع "صورة الروشتة" فقط لحفظ سلامته وأمانه الطبي. 
   إذا كان العميل أو المريض معندوش روشتة وعاوز يطلب أدوية، وضح له بوضوح إنه لازم يكلمنا مباشرة على أرقام تليفونات الموقع الرسمية الظاهرة قدامه (01222952593 أو 01065160093 أو 201028260783+) وفريق الصيدلية هيجهز له الأدوية بتاعته برا الموقع فوراً تليفونياً.
@@ -64,6 +59,12 @@ SYSTEM_PROMPT = """
 "بعتذر جداً لحضرتك، حفاظاً على سلامتك وأمانك الطبي، ممنوع أوصف أدوية أو تشخيص عبر المساعد الذكي. تقدر تشرفنا في الصيدلية والدكتور الصيدلي المسؤول هيفيدك بكل أمان".
 """
 
+app = FastAPI(
+    title="Pharmasmart Voice & Text AI API",
+    description="Backend API powered by Llama 3.3 and Whisper via Groq - Egyptian Dialect",
+    version="3.0"
+)
+
 class AIResponse(BaseModel):
     user_transcription: str  
     response: str            
@@ -73,26 +74,28 @@ async def chat_with_pharmasmart_voice(file: UploadFile = File(...)):
     if not file.filename:
         raise HTTPException(status_code=400, detail="No audio file provided")
 
-    temp_filename = f"temp_{file.filename}"
-    with open(temp_filename, "wb") as buffer:
-        buffer.write(await file.read())
-
     try:
-        # جلب عميل Groq بالمفتاح اللي عليه الدور
+        
+        audio_bytes = await file.read()
+        audio_file_like = io.BytesIO(audio_bytes)
+        audio_file_like.name = file.filename  
+
+        
         groq_client = await get_groq_client()
 
-        with open(temp_filename, "rb") as audio_file:
-            transcription = groq_client.audio.transcriptions.create(
-                file=(temp_filename, audio_file.read()),
-                model="whisper-large-v3", 
-                language="ar",            
-                temperature=0.0
-            )
+        
+        transcription = groq_client.audio.transcriptions.create(
+            file=audio_file_like,
+            model="whisper-large-v3", 
+            language="ar",            
+            temperature=0.0
+        )
 
         user_text = transcription.text
         if not user_text.strip():
             raise HTTPException(status_code=400, detail="لم نتمكن من سماع صوت واضح في الفويس.")
 
+        
         chat_completion = groq_client.chat.completions.create(
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
@@ -105,11 +108,10 @@ async def chat_with_pharmasmart_voice(file: UploadFile = File(...)):
         ai_text = chat_completion.choices[0].message.content
         return AIResponse(user_transcription=user_text, response=ai_text)
 
+    except HTTPException as he:
+        raise he
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"حدث خطأ أثناء معالجة الصوت: {str(e)}")
-    finally:
-        if os.path.exists(temp_filename):
-            os.remove(temp_filename)
 
 @app.post("/api/chat-text", response_model=AIResponse)
 async def chat_with_pharmasmart_text(text: str = Form(...)):
@@ -117,7 +119,6 @@ async def chat_with_pharmasmart_text(text: str = Form(...)):
         raise HTTPException(status_code=400, detail="Text cannot be empty")
 
     try:
-        # جلب عميل Groq بالمفتاح اللي عليه الدور
         groq_client = await get_groq_client()
 
         chat_completion = groq_client.chat.completions.create(
@@ -138,5 +139,5 @@ def read_root():
     return {"status": "Pharmasmart Voice & Text Server is Active with Load Balancing (Round Robin)."}
 
 if __name__ == "__main__":
-    # تشغيل الحاوية على البورت الافتراضي لـ Hugging Face Spaces
-    uvicorn.run("app:app", host="0.0.0.0", port=7860, reload=False)
+    
+    uvicorn.run("main:app", host="0.0.0.0", port=7860, reload=False)
