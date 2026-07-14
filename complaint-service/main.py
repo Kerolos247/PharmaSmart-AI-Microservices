@@ -12,7 +12,7 @@ MODEL_NAME = "kerolos1/pharmacy-complaints-v3-ultra"
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global classifier
-    print(f"⏳ Downloading and loading model from Hub: {MODEL_NAME}...")
+    print(f"Downloading and loading model from Hub: {MODEL_NAME}...")
     try:
        
         with torch.no_grad():
@@ -22,7 +22,7 @@ async def lifespan(app: FastAPI):
                 tokenizer=MODEL_NAME, 
                 device=-1
             )
-        print("✅ Model loaded successfully and ready for inference!")
+        print("Model loaded successfully and ready for inference!")
     except Exception as e:
         print("--- CRITICAL ERROR DURING COMPLAINTS MODEL LOADING ---")
         print(traceback.format_exc())
