@@ -1,5 +1,4 @@
 fastapi
 uvicorn
 pydantic
-torch>=2.4.0
 transformers
