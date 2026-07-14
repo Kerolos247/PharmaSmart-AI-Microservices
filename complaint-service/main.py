@@ -1,32 +1,42 @@
 import os
 import traceback
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+import torch  
 from transformers import pipeline
+
+MODEL_NAME = "kerolos1/pharmacy-complaints-v3-ultra"
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    global classifier
+    print(f"⏳ Downloading and loading model from Hub: {MODEL_NAME}...")
+    try:
+       
+        with torch.no_grad():
+            classifier = pipeline(
+                "text-classification", 
+                model=MODEL_NAME, 
+                tokenizer=MODEL_NAME, 
+                device=-1
+            )
+        print("✅ Model loaded successfully and ready for inference!")
+    except Exception as e:
+        print("--- CRITICAL ERROR DURING COMPLAINTS MODEL LOADING ---")
+        print(traceback.format_exc())
+        classifier = None
+    yield
+   
+    classifier = None
 
 app = FastAPI(
     title="Kerolos Pharmacy Complaints V3-Ultra API",
     description="Backend API for classifying pharmacy complaints into 10 categories.",
-    version="3.0"
+    version="3.0",
+    lifespan=lifespan  
 )
-
-MODEL_NAME = "kerolos1/pharmacy-complaints-v3-ultra"
-classifier = None
-
-print(f"⏳ Downloading and loading model from Hub: {MODEL_NAME}...")
-try:
-  
-    classifier = pipeline(
-        "text-classification", 
-        model=MODEL_NAME, 
-        tokenizer=MODEL_NAME, 
-        device=-1
-    )
-    print("✅ Model loaded successfully and ready for inference!")
-except Exception as e:
-    print("--- CRITICAL ERROR DURING COMPLAINTS MODEL LOADING ---")
-    print(traceback.format_exc())
-    classifier = None
 
 class ComplaintRequest(BaseModel):
     text: str
@@ -48,7 +58,8 @@ def predict_complaint(payload: ComplaintRequest):
         print(f"Incoming complaint text: '{payload.text}'")
         
         
-        result = classifier(payload.text, truncation=True)[0]
+        with torch.no_grad():
+            result = classifier(payload.text, truncation=True)[0]
         
         print(f"Raw Complaints Model Output: Label={result['label']}, Score={result['score']}")
                 
