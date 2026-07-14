@@ -40,13 +40,13 @@ flashrank_client = None
 async def lifespan(app: FastAPI):
     global embeddings, vector_db, base_retriever, flashrank_client
     try:
-        print("🧠 Loading Embeddings Model...")
+        print("Loading Embeddings Model...")
         embeddings = HuggingFaceEmbeddings(
             model_name="BAAI/bge-small-en-v1.5",
             model_kwargs={'device': 'cpu'}
         )
 
-        print("🌐 Connecting to Qdrant Cloud...")
+        print("Connecting to Qdrant Cloud...")
         client = QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY)
         vector_db = QdrantVectorStore(
             client=client,
@@ -55,10 +55,10 @@ async def lifespan(app: FastAPI):
         )
         base_retriever = vector_db.as_retriever(search_kwargs={"k": 6})
 
-        print("🎯 Loading Re-ranker (MiniLM-L-12)...")
+        print("Loading Re-ranker (MiniLM-L-12)...")
         flashrank_client = Ranker(model_name="ms-marco-MiniLM-L-12-v2", cache_dir="/tmp/flashrank_cache")
         
-        print("✅ All Models & Databases loaded successfully!")
+        print("All Models & Databases loaded successfully!")
     except Exception as e:
         print("--- CRITICAL ERROR DURING STARTUP ---")
         print(traceback.format_exc())
