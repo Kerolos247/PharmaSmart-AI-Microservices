@@ -6,16 +6,11 @@ The services are designed to run independently while integrating seamlessly with
 
 ---
 
-# 🏗️ System Architecture
+## 🏗️ System Architecture
 
-```text
-PharmaSmart-AI-Microservices
-│
-├── consultation-service      # Stateful RAG pipeline
-├── voice-assistant-service   # Voice & conversational AI
-├── sentiment-service         # Egyptian sentiment analysis
-└── complaint-service         # Complaint classification
-```
+Below is the detailed high-level architecture of our containerized **PharmaSmart AI Microservices Layer**, illustrating the internal pipelines, endpoints, and external service integrations:
+
+![PharmaSmart AI Microservices Architecture](https://raw.githubusercontent.com/Kerolos247/PharmaSmart-AI-Microservices/main/Diagram_Ai.png)
 
 ---
 
