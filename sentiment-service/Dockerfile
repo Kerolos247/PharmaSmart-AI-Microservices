@@ -9,7 +9,7 @@ ENV HOME=/home/user \
 WORKDIR $HOME/app
 
 
-RUN pip install --no-cache-dir --user torch==2.2.1 --index-url https://download.pytorch.org/whl/cpu
+RUN pip install --no-cache-dir --user torch==2.4.0 --index-url https://download.pytorch.org/whl/cpu
 
 
 COPY --chown=user requirements.txt $HOME/app/requirements.txt
@@ -17,7 +17,6 @@ RUN pip install --no-cache-dir --user -r requirements.txt
 
 
 COPY --chown=user . $HOME/app
-
 
 EXPOSE 7860
 
