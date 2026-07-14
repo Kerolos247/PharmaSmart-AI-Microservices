@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+pydantic==2.8.2
+langchain
+langchain-community
+langchain-core
+langchain-qdrant
+qdrant-client
+sentence-transformers
+groq
+flashrank
+pandas
+torch --index-url https://download.pytorch.org/whl/cpu
