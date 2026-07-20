@@ -1,14 +1,10 @@
 # 💊 PharmaSmart AI Microservices
 
-This repository contains the AI layer of **PharmaSmart**, a smart pharmacy management platform. It consists of four independent, containerized microservices built with **FastAPI**, **Docker**, and modern AI technologies including **Retrieval-Augmented Generation (RAG)**, **Large Language Models (LLMs)**, **Speech-to-Text**, **Sentiment Analysis**, and **Text Classification**.
-
-The services are designed to run independently while integrating seamlessly with the core **ASP.NET MVC / .NET** backend through REST APIs.
+This repository contains the AI layer of **PharmaSmart**, consisting of four independent, containerized microservices built with **FastAPI**, **Docker**, and modern AI technologies. The services integrate with the core **ASP.NET Core MVC** application through REST APIs to provide intelligent pharmaceutical capabilities.
 
 ---
 
-## 🏗️ System Architecture
-
-Below is the detailed high-level architecture of our containerized **PharmaSmart AI Microservices Layer**, illustrating the internal pipelines, endpoints, and external service integrations:
+# 🏗️ System Architecture
 
 ![PharmaSmart AI Microservices Architecture](https://raw.githubusercontent.com/Kerolos247/PharmaSmart-AI-Microservices/main/Diagram_Ai.png)
 
@@ -18,177 +14,100 @@ Below is the detailed high-level architecture of our containerized **PharmaSmart
 
 ## 📖 Consultation Service (Stateful RAG)
 
-A Retrieval-Augmented Generation (RAG) service specialized in answering pharmaceutical questions using FDA drug labels.
+Answers pharmaceutical questions using FDA drug labels through a Retrieval-Augmented Generation (RAG) pipeline.
 
-### Tech Stack
+### Technologies
 
-* FastAPI
-* LangChain
-* HuggingFace Embeddings
-* Qdrant Cloud
-* FlashRank
-* Groq API
-* Llama 3.1
-* Docker
+- FastAPI
+- LangChain
+- HuggingFace Embeddings
+- Qdrant
+- FlashRank
+- Groq API
+- Llama 3.3
+- Docker
 
-### Features
+### Highlights
 
-* Semantic vector search
-* Two-stage retrieval pipeline
-
-  * Qdrant Vector Search
-  * FlashRank reranking
-* Context-aware response generation
-* Guardrails to reduce medical hallucinations
-* Multi-key Groq API rotation using Round Robin
-* Dockerized deployment
+- Semantic vector search
+- FlashRank reranking
+- Context-aware response generation
+- Medical safety guardrails
+- Multi-key Groq API rotation
 
 ---
 
 ## 🎙️ Voice Assistant Service
 
-A voice-enabled virtual assistant capable of understanding and responding in Egyptian Arabic.
+Egyptian Arabic voice assistant supporting speech-to-text and AI-powered conversations.
 
-### Tech Stack
+### Technologies
 
-* FastAPI
-* Groq Whisper Large v3
-* Llama 3.3 70B
-* Docker
+- FastAPI
+- Groq Whisper Large v3
+- Llama 3.3
+- Docker
 
-### Features
+### Highlights
 
-* Speech-to-Text transcription
-* Egyptian Arabic conversational assistant
-* In-memory audio processing using `io.BytesIO`
-* Thread-safe request handling
-* Medical safety guardrails
-* Stateless architecture
+- Speech-to-text
+- Egyptian Arabic conversations
+- Stateless architecture
 
 ---
 
 ## 😊 Sentiment Service
 
-A FastAPI service for analyzing customer and patient feedback.
+Analyzes Egyptian Arabic customer feedback using a fine-tuned BERT model.
 
-### Tech Stack
+### Technologies
 
-* FastAPI
-* HuggingFace Transformers
-* PyTorch
-* Fine-tuned BERT Model
+- FastAPI
+- HuggingFace Transformers
+- PyTorch
+- Fine-tuned BERT
 
-### Features
+### Highlights
 
-* Egyptian Arabic sentiment classification
-* Optimized inference using `torch.no_grad()`
-* FastAPI Lifespan model initialization
-* Cached model pipeline
-* Lightweight REST API
+- Sentiment classification
 
 ---
 
 ## 📋 Complaint Service
 
-A text classification service that categorizes pharmacy customer complaints into operational departments.
+Classifies customer complaints into pharmacy operational categories.
 
-### Tech Stack
+### Technologies
 
-* FastAPI
-* HuggingFace Transformers
-* PyTorch
-* Fine-tuned BERT Model
+- FastAPI
+- HuggingFace Transformers
+- PyTorch
+- Fine-tuned BERT
 
-### Features
+### Highlights
 
-* Multi-class complaint classification
-* Optimized CPU inference
-* Long-text truncation support
-* Lightweight deployment
-* REST API
+- Multi-class classification
 
 ---
 
-# 🧠 AI Stack
+# 🛠️ AI Stack
 
-* FastAPI
-* Docker
-* LangChain
-* HuggingFace Transformers
-* HuggingFace Embeddings
-* PyTorch
-* Groq API
-* Llama 3.1
-* Llama 3.3
-* Whisper Large v3
-* FlashRank
-* Qdrant Cloud
-
----
-
-# 🚀 Production Features
-
-* Retrieval-Augmented Generation (RAG)
-* Semantic Vector Search
-* FlashRank Reranking
-* Semantic Retrieval
-* Multi-Key API Rotation
-* Stateless & Stateful Services
-* Dockerized Deployment
-* CPU-Optimized Inference
-* In-Memory Audio Processing
-* RESTful API Integration
+- FastAPI
+- Docker
+- LangChain
+- HuggingFace Transformers
+- HuggingFace Embeddings
+- PyTorch
+- Qdrant
+- FlashRank
+- Groq API
+- Llama 3.3
+- Whisper Large v3
 
 ---
 
-# 🐳 Docker
+# 📦 Repository Notice
 
-Each microservice is fully containerized and can be built and deployed independently.
+This repository is published for portfolio and code review purposes.
 
-Example:
-
-```bash
-cd consultation-service
-
-docker build -t pharmasmart-consultation .
-
-docker run -p 7860:7860 --env-file .env pharmasmart-consultation
-```
-
----
-
-# ⚙️ Environment Variables
-
-Example:
-
-```env
-QDRANT_URL=https://your-qdrant-cloud-url
-QDRANT_API_KEY=your-qdrant-api-key
-COLLECTION_NAME=fda_collection
-GROQ_API_KEYS=gsk_key1,gsk_key2,gsk_key3
-```
-
----
-# ▶️ Running Locally
-
-Clone the repository:
-
-```bash
-git clone https://github.com/YourUsername/PharmaSmart-AI-Microservices.git
-
-cd PharmaSmart-AI-Microservices
-```
-
-Navigate to any service:
-
-```bash
-cd consultation-service
-```
-
-Build and run with Docker:
-
-```bash
-docker build -t pharmasmart-consultation .
-
-docker run -p 7860:7860 --env-file .env pharmasmart-consultation
-```
+Configuration files, API keys, model artifacts, and deployment-specific settings have been intentionally excluded.
