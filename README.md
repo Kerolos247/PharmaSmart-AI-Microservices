@@ -29,7 +29,6 @@ Answers pharmaceutical questions using FDA drug labels through a Retrieval-Augme
 
 ### Highlights
 
-- Semantic vector search
 - FlashRank reranking
 - Context-aware response generation
 - Medical safety guardrails
